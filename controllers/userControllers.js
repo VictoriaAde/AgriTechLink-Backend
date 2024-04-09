@@ -1,5 +1,4 @@
 import { uploadPicture } from "../middleware/uploadPictureMiddleware";
-import Comment from "../models/Comment";
 import Product from "../models/Product";
 import User from "../models/User";
 import { fileRemover } from "../utils/fileRemover";
@@ -234,10 +233,6 @@ const deleteUser = async (req, res, next) => {
 
     const productsToDelete = await Product.find({ user: user._id });
     const productIdsToDelete = productsToDelete.map((product) => product._id);
-
-    await Comment.deleteMany({
-      product: { $in: productIdsToDelete },
-    });
 
     await Product.deleteMany({
       _id: { $in: productIdsToDelete },

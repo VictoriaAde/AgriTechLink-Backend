@@ -1,6 +1,5 @@
 import { uploadPicture } from "../middleware/uploadPictureMiddleware";
 import Product from "../models/Product";
-import Comment from "../models/Comment";
 import { fileRemover } from "../utils/fileRemover";
 import { v4 as uuidv4 } from "uuid";
 
@@ -90,8 +89,6 @@ const deleteProduct = async (req, res, next) => {
 
     fileRemover(product.photo);
 
-    await Comment.deleteMany({ product: product._id });
-
     return res.json({
       message: "Product is successfully deleted",
     });
@@ -110,31 +107,6 @@ const getProduct = async (req, res, next) => {
       {
         path: "categories",
         select: ["title"],
-      },
-      {
-        path: "comments",
-        match: {
-          check: true,
-          parent: null,
-        },
-        populate: [
-          {
-            path: "user",
-            select: ["avatar", "name"],
-          },
-          {
-            path: "replies",
-            match: {
-              check: true,
-            },
-            populate: [
-              {
-                path: "user",
-                select: ["avatar", "name"],
-              },
-            ],
-          },
-        ],
       },
     ]);
 
