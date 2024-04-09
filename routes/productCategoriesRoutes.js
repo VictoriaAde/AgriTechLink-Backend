@@ -1,23 +1,23 @@
 import express from "express";
 const router = express.Router();
 import {
-  createPostCategory,
-  deletePostCategory,
-  getAllPostCategories,
-  updatePostCategory,
+  createProductCategory,
+  deleteProductCategory,
+  getAllProductCategories,
+  updateProductCategory,
   getSingleCategory,
 } from "../controllers/productCategoriesController";
 import { adminGuard, authGuard } from "../middleware/authMiddleware";
 
 router
   .route("/")
-  .post(authGuard, adminGuard, createPostCategory)
-  .get(getAllPostCategories);
+  .post(authGuard, adminGuard, createProductCategory)
+  .get(getAllProductCategories);
 
 router
-  .route("/:postCategoryId")
+  .route("/:productCategoryId")
   .get(getSingleCategory)
-  .put(authGuard, adminGuard, updatePostCategory)
-  .delete(authGuard, adminGuard, deletePostCategory);
+  .put(authGuard, adminGuard, updateProductCategory)
+  .delete(authGuard, adminGuard, deleteProductCategory);
 
 export default router;

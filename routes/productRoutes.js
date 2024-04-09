@@ -11,7 +11,7 @@ import { authGuard, adminGuard } from "../middleware/authMiddleware";
 
 router
   .route("/")
-  .product(authGuard, adminGuard, createProduct)
+  .post(authGuard, adminGuard, createProduct)
   .get(getAllProducts);
 router
   .route("/:slug")
