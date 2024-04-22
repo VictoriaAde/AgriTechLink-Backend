@@ -11,17 +11,18 @@ const UserSchema = new Schema(
     verified: { type: Boolean, default: false },
     verificationCode: { type: String, required: false },
     admin: { type: Boolean, default: false },
+    // Fields for admin registration
+    jobTitle: { type: String },
+    phoneNumber: { type: String },
+    // Fields for farmer registration
+    address: { type: String },
+    farmName: { type: String },
+    farmSize: { type: String },
+    cropsGrown: [{ type: String }],
+    farmingPractices: { type: String },
   },
   { timestamps: true }
 );
-
-UserSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    this.password = await hash(this.password, 10);
-    return next();
-  }
-  return next();
-});
 
 UserSchema.methods.generateJWT = async function () {
   return await sign({ id: this._id }, process.env.JWT_SECRET, {

@@ -5,20 +5,41 @@ import { fileRemover } from "../utils/fileRemover";
 
 const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const {
+      name,
+      email,
+      password,
+      jobTitle,
+      phoneNumber,
+      address,
+      farmName,
+      farmSize,
+      cropsGrown,
+      farmingPractices,
+    } = req.body;
 
     // check whether the user exists or not
     let user = await User.findOne({ email });
 
     if (user) {
-      throw new Error("User have already registered");
+      throw new Error("User has already registered");
     }
 
-    // creating a new user
+    // Determine if admin or farmer based on the presence of jobTitle field
+    let isAdmin = !!jobTitle;
+
     user = await User.create({
       name,
       email,
       password,
+      admin: isAdmin,
+      jobTitle: isAdmin ? jobTitle : undefined,
+      phoneNumber: isAdmin ? phoneNumber : undefined,
+      address: isAdmin ? undefined : address,
+      farmName: isAdmin ? undefined : farmName,
+      farmSize: isAdmin ? undefined : farmSize,
+      cropsGrown: isAdmin ? undefined : cropsGrown,
+      farmingPractices: isAdmin ? undefined : farmingPractices,
     });
 
     return res.status(201).json({
@@ -27,7 +48,9 @@ const registerUser = async (req, res, next) => {
       name: user.name,
       email: user.email,
       verified: user.verified,
-      admin: user.admin,
+      // Include userType field in the response
+      userType: isAdmin ? "admin" : "farmer",
+      // Include additional fields in the response if needed
       token: await user.generateJWT(),
     });
   } catch (error) {
