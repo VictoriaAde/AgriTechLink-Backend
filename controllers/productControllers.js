@@ -5,20 +5,16 @@ import { v4 as uuidv4 } from "uuid";
 
 const createProduct = async (req, res, next) => {
   try {
+    const { title, description, price } = req.body;
     const product = new Product({
-      title: "sample title",
-      caption: "sample caption",
-      slug: uuidv4(),
-      body: {
-        type: "doc",
-        content: [],
-      },
-      photo: "",
+      title,
+      description,
+      price,
+      photo: req.file ? req.file.filename : "",
       user: req.user._id,
     });
-
     const createdProduct = await product.save();
-    return res.json(createdProduct);
+    return res.status(201).json(createdProduct);
   } catch (error) {
     next(error);
   }
@@ -29,7 +25,7 @@ const updateProduct = async (req, res, next) => {
     const product = await Product.findOne({ slug: req.params.slug });
 
     if (!product) {
-      const error = new Error("Product aws not found");
+      const error = new Error("Product was not found");
       next(error);
       return;
     }
@@ -37,13 +33,18 @@ const updateProduct = async (req, res, next) => {
     const upload = uploadPicture.single("productPicture");
 
     const handleUpdateProductData = async (data) => {
-      const { title, caption, slug, body, tags, categories } = JSON.parse(data);
+      const { title, description, price, status } = JSON.parse(data);
       product.title = title || product.title;
-      product.caption = caption || product.caption;
-      product.slug = slug || product.slug;
-      product.body = body || product.body;
-      product.tags = tags || product.tags;
-      product.categories = categories || product.categories;
+      product.description = description || product.description;
+      product.price = price || product.price;
+      product.status = status || product.status;
+
+      if (req.file) {
+        // If a new photo is uploaded, remove the old one and update with the new filename
+        fileRemover(product.photo);
+        product.photo = req.file.filename;
+      }
+
       const updatedProduct = await product.save();
       return res.json(updatedProduct);
     };
@@ -51,11 +52,11 @@ const updateProduct = async (req, res, next) => {
     upload(req, res, async function (err) {
       if (err) {
         const error = new Error(
-          "An unknown error occured when uploading " + err.message
+          "An unknown error occurred when uploading " + err.message
         );
         next(error);
       } else {
-        // every thing went well
+        // Everything went well
         if (req.file) {
           let filename;
           filename = product.photo;
@@ -87,7 +88,10 @@ const deleteProduct = async (req, res, next) => {
       return next(error);
     }
 
-    fileRemover(product.photo);
+    // If product photo exists, remove it
+    if (product.photo) {
+      fileRemover(product.photo);
+    }
 
     return res.json({
       message: "Product is successfully deleted",
@@ -99,16 +103,10 @@ const deleteProduct = async (req, res, next) => {
 
 const getProduct = async (req, res, next) => {
   try {
-    const product = await Product.findOne({ slug: req.params.slug }).populate([
-      {
-        path: "user",
-        select: ["avatar", "name"],
-      },
-      {
-        path: "categories",
-        select: ["title"],
-      },
-    ]);
+    const product = await Product.findOne({ slug: req.params.slug }).populate(
+      "user",
+      "avatar name"
+    );
 
     if (!product) {
       const error = new Error("Product was not found");
@@ -150,16 +148,7 @@ const getAllProducts = async (req, res, next) => {
     const result = await query
       .skip(skip)
       .limit(pageSize)
-      .populate([
-        {
-          path: "user",
-          select: ["avatar", "name", "verified"],
-        },
-        {
-          path: "categories",
-          select: ["title"],
-        },
-      ])
+      .populate("user", "avatar name")
       .sort({ updatedAt: "desc" });
 
     return res.json(result);

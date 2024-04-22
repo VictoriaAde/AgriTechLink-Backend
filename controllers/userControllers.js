@@ -42,6 +42,8 @@ const registerUser = async (req, res, next) => {
       farmingPractices: isAdmin ? undefined : farmingPractices,
     });
 
+    const token = await user.generateJWT(); // Generate JWT token
+
     return res.status(201).json({
       _id: user._id,
       avatar: user.avatar,
@@ -51,7 +53,7 @@ const registerUser = async (req, res, next) => {
       // Include userType field in the response
       userType: isAdmin ? "admin" : "farmer",
       // Include additional fields in the response if needed
-      token: await user.generateJWT(),
+      token: token,
     });
   } catch (error) {
     next(error);
@@ -69,6 +71,8 @@ const loginUser = async (req, res, next) => {
     }
 
     if (await user.comparePassword(password)) {
+      const token = await user.generateJWT(); // Generate JWT token
+
       return res.status(201).json({
         _id: user._id,
         avatar: user.avatar,
@@ -76,7 +80,7 @@ const loginUser = async (req, res, next) => {
         email: user.email,
         verified: user.verified,
         admin: user.admin,
-        token: await user.generateJWT(),
+        token: token,
       });
     } else {
       throw new Error("Invalid email or password");

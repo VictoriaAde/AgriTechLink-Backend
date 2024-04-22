@@ -3,22 +3,19 @@ import { Schema, model } from "mongoose";
 const ProductSchema = new Schema(
   {
     title: { type: String, required: true },
-    caption: { type: String, required: true },
-    slug: { type: String, required: true, unique: true },
-    body: { type: Object, required: true },
+    description: { type: String, required: true },
+    price: { type: Number, required: true },
     photo: { type: String, required: false },
+    status: {
+      type: String,
+      enum: ["in-stock", "out-of-stock"],
+      default: "in-stock",
+    },
     user: { type: Schema.Types.ObjectId, ref: "User" },
-    tags: { type: [String] },
-    categories: [{ type: Schema.Types.ObjectId, ref: "ProductCategories" }],
+    createdAt: { type: Date, default: Date.now },
   },
-  { timestamps: true, toJSON: { virtuals: true } }
+  { timestamps: true }
 );
-
-ProductSchema.virtual("comments", {
-  ref: "Comment",
-  localField: "_id",
-  foreignField: "product",
-});
 
 const Product = model("Product", ProductSchema);
 export default Product;
