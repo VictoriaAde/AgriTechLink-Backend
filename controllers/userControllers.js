@@ -71,8 +71,6 @@ const loginUser = async (req, res, next) => {
     }
 
     if (await user.comparePassword(password)) {
-      const token = await user.generateJWT(); // Generate JWT token
-
       return res.status(201).json({
         _id: user._id,
         avatar: user.avatar,
@@ -80,7 +78,7 @@ const loginUser = async (req, res, next) => {
         email: user.email,
         verified: user.verified,
         admin: user.admin,
-        token: token,
+        token: await user.generateJWT(),
       });
     } else {
       throw new Error("Invalid email or password");

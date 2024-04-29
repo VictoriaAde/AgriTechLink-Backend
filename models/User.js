@@ -24,6 +24,14 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
+UserSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await hash(this.password, 10);
+    return next();
+  }
+  return next();
+});
+
 UserSchema.methods.generateJWT = async function () {
   return await sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: "30d",
